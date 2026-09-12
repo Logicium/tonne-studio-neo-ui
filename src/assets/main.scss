@@ -1,0 +1,415 @@
+// Tonne. Design system.
+// Five inks and no paper. Every panel is a full-bleed field of one colour
+// and the type sits in that field's "on" colour. Bone is only ever text.
+// Vermilion is the studio's own colour; ultramarine, lime and lilac are the
+// three it hands to the work. Ink is the ground everything returns to.
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --vermilion: #ff3d1f;
+  --ultramarine: #2230ff;
+  --lime: #d4ff3a;
+  --lilac: #c9b4ff;
+  --ink: #0d0c0b;
+  --bone: #f2ede3;
+
+  --bg: var(--ink);
+  --on: var(--bone);
+
+  // Ranade (Indian Type Foundry, via Fontshare): a wide grotesk with
+  // angular cuts in the round letters, variable 100 to 700 plus italics.
+  --display: 'Ranade', 'Helvetica Neue', Arial, sans-serif;
+  --voice: 'Instrument Serif', 'Times New Roman', Georgia, serif;
+  --mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  // Type scale. Six sizes. The two biggest are measured against the
+  // viewport so a headline is always a physical object on the screen.
+  --fs-giant: clamp(120px, 24vw, 420px);
+  --fs-display: clamp(64px, 11.5vw, 220px);
+  --fs-heading: clamp(36px, 5.2vw, 96px);
+  --fs-lead: clamp(22px, 2.5vw, 42px);
+  --fs-body: clamp(16px, 1.15vw, 19px);
+  --fs-meta: 12px;
+
+  --gutter: clamp(20px, 3.4vw, 56px);
+  --header-h: 72px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-slow: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html {
+  // The native scrollbar is hidden; ScrollRail.vue draws the site's own.
+  scrollbar-width: none;
+  background: var(--ink);
+  color: var(--bone);
+  font-family: var(--display);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+html::-webkit-scrollbar {
+  display: none;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: clip;
+  font-size: var(--fs-body);
+  font-weight: 400;
+  line-height: 1.45;
+  background: var(--bg);
+  color: var(--on);
+}
+
+body.no-cursor,
+body.no-cursor * {
+  cursor: none !important;
+}
+
+body.locked {
+  overflow: hidden;
+}
+
+img,
+svg,
+canvas,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+::selection {
+  background: var(--lime);
+  color: var(--ink);
+}
+
+// ------------------------------------------------------------------ fields
+
+// A field is a full-bleed colour. Set `--bg` and `--on` and everything inside
+// inherits. The named modifiers are the only five fields the site uses.
+.field-vermilion {
+  --bg: var(--vermilion);
+  --on: var(--ink);
+}
+.field-ultramarine {
+  --bg: var(--ultramarine);
+  --on: var(--bone);
+}
+.field-lime {
+  --bg: var(--lime);
+  --on: var(--ink);
+}
+.field-lilac {
+  --bg: var(--lilac);
+  --on: var(--ink);
+}
+.field-ink {
+  --bg: var(--ink);
+  --on: var(--bone);
+}
+
+// ------------------------------------------------------------------ panels
+
+// A stack of full-height panels. Each panel sticks to the top and the next
+// scrolls up over it. `--cover` (0 to 1, set from JS) is how far a panel is
+// covered by its follower; it shrinks and darkens as it goes under.
+.stack {
+  position: relative;
+}
+
+.panel {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  min-height: 100svh;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--on);
+  --cover: 0;
+  transform-origin: 50% 30%;
+}
+
+.panel.covered {
+  transform: scale(calc(1 - var(--cover) * 0.07)) translateY(calc(var(--cover) * -5vh));
+  filter: brightness(calc(1 - var(--cover) * 0.6));
+}
+
+.panel-inner {
+  position: relative;
+  height: 100%;
+  padding: calc(var(--header-h) + 8px) var(--gutter) var(--gutter);
+}
+
+// Fine editorial grid drawn over a panel. Twelve columns of hairlines in
+// the field's on colour, faint enough to be felt rather than read.
+.grid-lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to right,
+    color-mix(in srgb, var(--on) 16%, transparent) 0 1px,
+    transparent 1px calc((100% - 2 * var(--gutter)) / 12)
+  );
+  background-position: var(--gutter) 0;
+  background-size: calc(100% - 2 * var(--gutter) + 1px) 100%;
+  background-repeat: no-repeat;
+  opacity: 0.55;
+}
+
+.rule {
+  border: 0;
+  border-top: 1px solid color-mix(in srgb, var(--on) 32%, transparent);
+}
+
+// ------------------------------------------------------------------ type
+
+.giant,
+.display,
+.heading {
+  font-family: var(--display);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.86;
+  text-wrap: balance;
+}
+
+.giant {
+  font-size: var(--fs-giant);
+  letter-spacing: -0.045em;
+  line-height: 0.82;
+}
+
+.display {
+  font-size: var(--fs-display);
+}
+
+.heading {
+  font-size: var(--fs-heading);
+  letter-spacing: -0.035em;
+  line-height: 0.92;
+}
+
+// Spines: the same face, set tighter so a long word stands as one block.
+.condensed {
+  letter-spacing: -0.055em;
+}
+
+.lead {
+  font-family: var(--display);
+  font-size: var(--fs-lead);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  text-wrap: pretty;
+}
+
+// The studio's second voice. Set in the middle of a display line for the
+// one word the sentence turns on.
+.voice {
+  font-family: var(--voice);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.meta {
+  font-family: var(--mono);
+  font-size: var(--fs-meta);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+
+.copy {
+  max-width: 34em;
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  text-wrap: pretty;
+
+  p + p {
+    margin-top: 1.1em;
+  }
+}
+
+// Sideways type. Reads bottom to top along an edge, like a book spine.
+.side {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+}
+
+.side-down {
+  writing-mode: vertical-rl;
+  white-space: nowrap;
+}
+
+// Pill button. The only rounded shape on the site besides the wordmark's O.
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7em;
+  height: 44px;
+  padding: 0 20px;
+  border: 1.5px solid var(--on);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: var(--fs-meta);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--on);
+  background: transparent;
+  transition:
+    background 0.6s var(--ease-slow),
+    color 0.6s var(--ease-slow);
+
+  &:hover {
+    background: var(--on);
+    color: var(--bg);
+  }
+
+  &.solid {
+    background: var(--on);
+    color: var(--bg);
+
+    &:hover {
+      background: transparent;
+      color: var(--on);
+    }
+  }
+}
+
+// Underline link. The line draws in from the left, slowly.
+.line-link {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 2px;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1.5px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.8s var(--ease-slow);
+  }
+
+  &:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+// ------------------------------------------------------------------ reveal
+
+.reveal-init {
+  opacity: 0;
+  transform: translateY(40px);
+  transition:
+    opacity 1.2s var(--ease-slow),
+    transform 1.4s var(--ease-slow);
+  transition-delay: var(--delay, 0s);
+
+  &.revealed {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+// Masked lines: each `.mask` holds one line that slides up from behind it.
+// The mask reaches a little below the baseline so descenders are not cut,
+// and pulls the next line back up by the same amount to keep the leading.
+.mask {
+  overflow: hidden;
+  display: block;
+  padding: 0.04em 0.06em 0.16em 0.04em;
+  margin: -0.04em -0.06em -0.16em -0.04em;
+}
+
+.reveal-init .mask > * {
+  display: block;
+  transform: translateY(110%);
+  transition: transform 1.4s var(--ease-slow);
+}
+
+.reveal-init.revealed .mask > * {
+  transform: none;
+}
+
+@for $i from 1 through 8 {
+  .reveal-init.revealed .mask:nth-child(#{$i}) > * {
+    transition-delay: #{($i - 1) * 0.09}s;
+  }
+}
+
+// ------------------------------------------------------------------ grain
+
+// Print grain over everything. A static noise tile, blended, so every
+// colour field reads as an inked sheet rather than a screen fill.
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.09;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 240px 240px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    // No transitions at all rather than near-zero ones: a running
+    // transition, however short, makes computed sizes lag the styles
+    // set from script for a frame, which breaks measurement (v-fit).
+    transition-property: none !important;
+  }
+
+  .panel.covered {
+    transform: none;
+    filter: none;
+  }
+}
